@@ -2,21 +2,42 @@ const Joi = require("joi");
 const { ApplicationError, ValidationError } = require("../helpers/error-handler");
 const { encryptAes } = require("../helpers/security");
 const dayjs = require("dayjs");
-const UserModel = require("../models/loan-model");
+const LoanModel = require("../models/loan-model");
+const LoanModel = require("../models/loan-model");
 
 class LoanController {
     static addLoan = async (req, res, next) => {
         try {
+            // CREATE TABLE`loans`(
+            //     `id` int NOT NULL AUTO_INCREMENT,
+            //     `customer_id` int NOT NULL,
+            //     `branch_id` int NOT NULL,
+            //     `amount_plafond` decimal(15, 2) NOT NULL,
+            //     `interest_rate` float DEFAULT NULL,
+            //     `loan_date` date DEFAULT NULL,
+            //     `term_months` int DEFAULT NULL,
+            //     `status` enum('active', 'completed', 'defaulted') DEFAULT 'active',
+            //         PRIMARY KEY(`id`) USING BTREE,
+            //             KEY`customer_id`(`customer_id`),
+            //             KEY`branch_id`(`branch_id`),
+            //             CONSTRAINT`loans_ibfk_1` FOREIGN KEY(`customer_id`) REFERENCES`customers`(`id`),
+            //                 CONSTRAINT`loans_ibfk_2` FOREIGN KEY(`branch_id`) REFERENCES`kantor_units`(`id`)
+            //   ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE =utf8mb4_0900_ai_ci;
             const schema = Joi.object({
-                username: Joi.string().required(),
-                email: Joi.string().email().required(),
-                password: Joi.string().min(5).required(),
+                customer_id: Joi.number().required(),
+                branch_id: Joi.number().required(),
+                amount_plafond: Joi.number().required(),
+                interest_rate: Joi.number().optional(),
+                loan_date: Joi.date().optional(),
+                term_months: Joi.number().optional(),
+                status: Joi.string().valid("active", "completed", "defaulted").optional(),
+
             });
 
             const { error } = schema.validate(req.body);
             if (error) return next(new ValidationError(error.message));
 
-            const userExist = await UserModel.findByUsernameOrEmail(req.body.username);
+            const userExist = await LoanModel.findByUsernameOrEmail(req.body.username);
             if (userExist) {
                 return res.status(400).json({
                     code: 101,
@@ -25,15 +46,13 @@ class LoanController {
                 });
             }
 
-            req.body.password = await encryptAes(req.body.password);
-            req.body.created_at = dayjs().format("YYYY-MM-DD HH:mm:ss");
-            req.body.role = "user";
-            const user = await UserModel.create(req.body);
+
+            const data = await LoanModel.insertLoan(req.body);
 
             return res.status(201).json({
                 code: 201,
-                message: "User created successfully",
-                data: user,
+                message: "Loans created successfully",
+                data: data,
             });
         } catch (error) {
             return next(new ApplicationError(error.message));
@@ -42,7 +61,7 @@ class LoanController {
 
     static getAllUsers = async (req, res, next) => {
         try {
-            const users = await UserModel.findAll();
+            const users = await LoanModel.findAll();
             return res.status(200).json({
                 code: 0,
                 message: "Users retrieved successfully",
@@ -59,7 +78,7 @@ class LoanController {
             const { error } = schema.validate(req.params);
             if (error) return next(new ValidationError(error.message));
 
-            const user = await UserModel.findOneByID(req.params.id);
+            const user = await LoanModel.findOneByID(req.params.id);
             if (!user) {
                 return res.status(404).json({
                     code: 102,
@@ -88,7 +107,7 @@ class LoanController {
             const { error } = schema.validate(req.body);
             if (error) return next(new ValidationError(error.message));
 
-            const user = await UserModel.findOneByID(req.params.id);
+            const user = await LoanModel.findOneByID(req.params.id);
             if (!user) {
                 return res.status(404).json({
                     code: 103,
@@ -98,7 +117,7 @@ class LoanController {
             }
 
             if (req.body.password) req.body.password = await encryptAes(req.body.password);
-            const updatedUser = await UserModel.update({ id: req.params.id }, req.body);
+            const updatedUser = await LoanModel.update({ id: req.params.id }, req.body);
 
             return res.status(200).json({
                 code: 0,
@@ -116,7 +135,7 @@ class LoanController {
             const { error } = schema.validate(req.params);
             if (error) return next(new ValidationError(error.message));
 
-            const user = await UserModel.findOneByID(req.params.id);
+            const user = await LoanModel.findOneByID(req.params.id);
             if (!user) {
                 return res.status(404).json({
                     code: 104,
@@ -125,7 +144,7 @@ class LoanController {
                 });
             }
 
-            await UserModel.delete({ id: req.params.id });
+            await LoanModel.delete({ id: req.params.id });
             return res.status(200).json({
                 code: 200,
                 message: "User deleted successfully",
