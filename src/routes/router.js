@@ -4,6 +4,9 @@ const { getNewToken, loginPro } = require("../middlewares/authenticate")
 const UserController = require("../controllers/user-controller")
 const LoanController = require("../controllers/loan-controller")
 const EmployeeController = require("../controllers/employee-controller")
+const KantorUnitController = require("../controllers/kantor-unit-controller")
+const IncomeController = require("../controllers/income-controller")
+const PaymentController = require("../controllers/payment-controller")
 
 
 const { uploadImageSingle, uploadImageMultiple, resizeImageSingle, resizeImageMultiple } = require('../helpers/upload-images');
@@ -30,12 +33,34 @@ router.put("/loans/:id", LoanController.updateLoan);
 router.delete("/loans/:id", LoanController.deleteLoan);
 
 // Employee
-
-router.post("/employees", EmployeeController.addEmployee);
+router.post("/employee", EmployeeController.addEmployee);
 router.get("/employees", EmployeeController.getAllEmployees);
-router.get("/employees/:id", EmployeeController.getEmployeeById);
-router.put("/employees/:id", EmployeeController.updateEmployee);
-router.delete("/employees/:id", EmployeeController.deleteEmployee);
+router.get("/employee/:id", EmployeeController.getEmployeeById);
+router.put("/employee/:id", EmployeeController.updateEmployee);
+router.delete("/employee/:id", EmployeeController.deleteEmployee);
+
+// kantor units
+router.post("/kantor-units", KantorUnitController.addKantorUnit);
+router.get("/kantor-units", KantorUnitController.getAllKantorUnits);
+router.get("/kantor-units/:id", KantorUnitController.getKantorUnitById);
+router.put("/kantor-units/:id", KantorUnitController.updateKantorUnit);
+router.delete("/kantor-units/:id", KantorUnitController.deleteKantorUnit);
+
+// Income
+router.post("/income", IncomeController.addIncome);
+router.get("/incomes", IncomeController.getAllIncome);
+router.get("/income/:id", IncomeController.getIncomeById);
+router.put("/income/:id", IncomeController.updateIncome);
+router.delete("/income/:id", IncomeController.deleteIncome);
+
+// Payments
+router.post("/payment", PaymentController.addPayment);
+router.get("/payments", PaymentController.getAllPayments);
+router.get("/payment/:id", PaymentController.getPaymentById);
+router.put("/payment/:id", PaymentController.updatePayment);
+router.delete("/payment/:id", PaymentController.deletePayment);
+
+
 
 
 
