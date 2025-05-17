@@ -1,29 +1,26 @@
 const Joi = require("joi");
 const { ApplicationError, ValidationError } = require("../helpers/error-handler");
-const LoanModel = require("../models/loan-model");
+const EmployeeModel = require("../models/employee-model");
 
-class LoanController {
-    static addLoan = async (req, res, next) => {
+class EmployeeController {
+    static addEmployee = async (req, res, next) => {
         try {
             const schema = Joi.object({
-                customer_id: Joi.number().required(),
-                branch_id: Joi.number().required(),
-                amount_plafond: Joi.number().required(),
-                interest_rate: Joi.number().optional(),
-                loan_date: Joi.date().optional(),
-                term_months: Joi.number().optional(),
-                status: Joi.string().valid("active", "completed", "defaulted").optional(),
+                name: Joi.string().required(),
+                position: Joi.string().required(),
+                assigned_customers: Joi.number().optional(),
+                hire_date: Joi.date().optional()
             });
 
             const { error } = schema.validate(req.body);
             if (error) return next(new ValidationError(error.message));
-            req.body.created_at = dayjs().format("YYYY-MM-DD HH:mm:ss");
 
-            const data = await LoanModel.insertLoan(req.body);
+            req.body.created_at = dayjs().format("YYYY-MM-DD HH:mm:ss");
+            const data = await EmployeeModel.insertEmployee(req.body);
 
             return res.status(201).json({
                 code: 201,
-                message: "Loan created successfully",
+                message: "Employee created successfully",
                 data,
             });
         } catch (error) {
@@ -31,55 +28,52 @@ class LoanController {
         }
     };
 
-    static getAllLoans = async (req, res, next) => {
+    static getAllEmployees = async (req, res, next) => {
         try {
-            const loans = await LoanModel.getAllLoans();
+            const employees = await EmployeeModel.getAllEmployees();
             return res.status(200).json({
                 code: 0,
-                message: "Loans retrieved successfully",
-                data: loans,
+                message: "Employees retrieved successfully",
+                data: employees,
             });
         } catch (error) {
             return next(new ApplicationError(error.message));
         }
     };
 
-    static getLoanById = async (req, res, next) => {
+    static getEmployeeById = async (req, res, next) => {
         try {
             const schema = Joi.object({ id: Joi.number().required() });
             const { error } = schema.validate(req.params);
             if (error) return next(new ValidationError(error.message));
 
-            const loan = await LoanModel.getLoanById(req.params.id);
-            if (!loan) {
+            const employee = await EmployeeModel.getEmployeeById(req.params.id);
+            if (!employee) {
                 return res.status(404).json({
                     code: 102,
-                    message: "Loan not found",
+                    message: "Employee not found",
                     data: null,
                 });
             }
 
             return res.status(200).json({
                 code: 0,
-                message: "Loan retrieved successfully",
-                data: loan,
+                message: "Employee retrieved successfully",
+                data: employee,
             });
         } catch (error) {
             return next(new ApplicationError(error.message));
         }
     };
 
-    static updateLoan = async (req, res, next) => {
+    static updateEmployee = async (req, res, next) => {
         try {
             const schemaParams = Joi.object({ id: Joi.number().required() });
             const schemaBody = Joi.object({
-                customer_id: Joi.number().optional(),
-                branch_id: Joi.number().optional(),
-                amount_plafond: Joi.number().optional(),
-                interest_rate: Joi.number().optional(),
-                loan_date: Joi.date().optional(),
-                term_months: Joi.number().optional(),
-                status: Joi.string().valid("active", "completed", "defaulted").optional(),
+                name: Joi.string().optional(),
+                position: Joi.string().optional(),
+                assigned_customers: Joi.number().optional(),
+                hire_date: Joi.date().optional()
             });
 
             const { error: errorParams } = schemaParams.validate(req.params);
@@ -88,42 +82,42 @@ class LoanController {
             const { error: errorBody } = schemaBody.validate(req.body);
             if (errorBody) return next(new ValidationError(errorBody.message));
 
-            const existingLoan = await LoanModel.getLoanById(req.params.id);
-            if (!existingLoan) {
+            const existing = await EmployeeModel.getEmployeeById(req.params.id);
+            if (!existing) {
                 return res.status(404).json({
                     code: 103,
-                    message: "Loan not found",
+                    message: "Employee not found",
                     data: null,
                 });
             }
 
-            const updatedLoan = await LoanModel.updateLoan(req.params.id, req.body);
+            const updated = await EmployeeModel.updateEmployee(req.params.id, req.body);
             return res.status(200).json({
                 code: 0,
-                message: "Loan updated successfully",
-                data: updatedLoan,
+                message: "Employee updated successfully",
+                data: updated,
             });
         } catch (error) {
             return next(new ApplicationError(error.message));
         }
     };
 
-    static deleteLoan = async (req, res, next) => {
+    static deleteEmployee = async (req, res, next) => {
         try {
             const schema = Joi.object({ id: Joi.number().required() });
             const { error } = schema.validate(req.params);
             if (error) return next(new ValidationError(error.message));
 
-            const loan = await LoanModel.getLoanById(req.params.id);
-            if (!loan) {
+            const existing = await EmployeeModel.getEmployeeById(req.params.id);
+            if (!existing) {
                 return res.status(404).json({
                     code: 104,
-                    message: "Loan not found",
+                    message: "Employee not found",
                     data: null,
                 });
             }
 
-            const result = await LoanModel.deleteLoan(req.params.id);
+            const result = await EmployeeModel.deleteEmployee(req.params.id);
             return res.status(200).json({
                 code: 200,
                 message: result.message,
@@ -135,4 +129,4 @@ class LoanController {
     };
 }
 
-module.exports = LoanController;
+module.exports = EmployeeController;
